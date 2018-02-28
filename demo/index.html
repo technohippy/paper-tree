@@ -173,81 +173,82 @@
     <h3>Lazy loading demo</h3>
     <demo-snippet>
         <template>
-            <template id="t" is="dom-bind">
-                <style is="custom-style">
-                    @keyframes blinker {
-                      50% { opacity: 0; }
-                    }
-
-                    #tree {
-                        --paper-tree-toggle-theme: {
-                            animation: blinker 1s linear infinite;
-                            content: '⧖';
-                            margin-left: -21px;
-                        };
-                    }
-                </style>
-
-                <paper-tree id="tree" on-toggle="onToggle" data='{"name": "Loading..."}'></paper-tree>
-
-                <script>
-
-                    var template = document.querySelector('#t'),
-                        tree = template.$.tree;
-
-                    // Update the root data after 1 second delay
-                    window.setTimeout(function() {
-                        tree.data = { name:'Cronos' };
-                        // Fetching root children ...
-                        template.fetchChildren(tree.$.root);
-                    }, 1000);
-
-
-                    template.onToggle = function(event) {
-                        var target = event.detail;
-
-                        if (!target.loaded) {
-                            target.loaded = true;
-                            target.getChildren().forEach(function(child){
-                                // Fetching children ...
-                                this.fetchChildren(child);
-                            }, this);
-                        }
-                    },
-
-                    template.setLoadingState = function(node, enabled) {
-
-                        if (enabled) {
-                            node.customStyle['--paper-tree-toggle-theme'] = 'animation: blinker 1s linear infinite; content: \'⧖\'; margin-left: -21px;';
-                        } else {
-                            node.customStyle['--paper-tree-toggle-theme'] = ';';
+            <dom-bind>
+                <template>
+                    <style is="custom-style">
+                        @keyframes blinker {
+                          50% { opacity: 0; }
                         }
 
-                        node.updateStyles();
-                    },
+                        #tree {
+                            --paper-tree-toggle-theme: {
+                                animation: blinker 1s linear infinite;
+                                content: '⧖';
+                                margin-left: -21px;
+                            };
+                        }
+                    </style>
 
-                    template.fetchChildren = function(node) {
+                    <paper-tree id="tree" on-toggle="onToggle" data='{"name": "Loading..."}'></paper-tree>
 
-                        // Set loading styles
-                        this.setLoadingState(node, true);
+                    <script>
 
+                        var autobind = document.querySelector('dom-bind');
+                        var tree = document.querySelector('#tree');
+
+                        // Update the root data after 1 second delay
                         window.setTimeout(function() {
+                            tree.data = { name:'Cronos' };
+                            // Fetching root children ...
+                            autobind.fetchChildren(tree.root);
+                        }, 1000);
 
-                            // Add children to the node
-                            node.set('data.children', [
-                                {name: 'Zeus'},
-                                {name: 'Apollo'},
-                                {name: 'Athena'},
-                                {name: 'Poseidon'}
-                            ]);
+                        autobind.onToggle = function(event) {
+                            var target = event.detail;
 
-                            // Reset loading styles
-                            this.setLoadingState(node, false);
+                            if (!target.loaded) {
+                                target.loaded = true;
+                                target.getChildren().forEach(function(child){
+                                    // Fetching children ...
+                                    this.fetchChildren(child);
+                                }, this);
+                            }
+                        };
 
-                        }.bind(this), Math.floor(Math.random() * 2000));
-                    }
-                </script>
-            </template>
+                        autobind.setLoadingState = function(node, enabled) {
+
+                            if (enabled) {
+                                node.style['--paper-tree-toggle-theme'] = 'animation: blinker 1s linear infinite; content: \'⧖\'; margin-left: -21px;';
+                            } else {
+                                node.style['--paper-tree-toggle-theme'] = ';';
+                            }
+
+                            node.updateStyles();
+                        };
+
+                        autobind.fetchChildren = function(node) {
+
+                            // Set loading styles
+                            this.setLoadingState(node, true);
+
+                            window.setTimeout(function() {
+
+                                // Add children to the node
+                                node.set('data.children', [
+                                    {name: 'Zeus'},
+                                    {name: 'Apollo'},
+                                    {name: 'Athena'},
+                                    {name: 'Poseidon'}
+                                ]);
+
+                                // Reset loading styles
+                                this.setLoadingState(node, false);
+
+                            }.bind(this), Math.floor(Math.random() * 2000));
+                        };
+                    </script>
+                </template>
+            </dom-bind>
         </template>
     </demo-snippet>
 
