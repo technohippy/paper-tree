@@ -82,6 +82,7 @@ class PaperTree extends Polymer.Element {
 
   ready() {
     super.ready();
+    this.root = this.shadowRoot.querySelector('#root');
     this.addEventListener('select', this._selectNode);
   }
 
@@ -89,7 +90,7 @@ class PaperTree extends Polymer.Element {
    * Called whenever the data is changed to notify the lower nodes.
    */
   _dataChanged()  {
-    //this.$.root.data = this.data;
+    this.root.data = this.data;
     console.log('_dataChanged', this.data);
   }
 
@@ -97,7 +98,7 @@ class PaperTree extends Polymer.Element {
    * Called whenever the actions list is changed to notify the lower nodes.
    */
   _actionsChanged()  {
-    //this.$.root.actions = this.actions;
+    this.root.actions = this.actions;
     console.log('_actionsChanged', this.actions);
   }
 

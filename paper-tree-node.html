@@ -229,7 +229,7 @@ class PaperTreeNode extends Polymer.Element {
    * Returns the children tree nodes.
    */
   getChildren () {
-    return Polymer.dom(this.root).querySelectorAll('paper-tree-node');
+    return this.root.querySelectorAll('paper-tree-node');
   }
 
   /**
@@ -237,7 +237,9 @@ class PaperTreeNode extends Polymer.Element {
    */
   toggleChildren() {
     this.set("data.open", !this.data.open && this.data.children && this.data.children.length);
-    setTimeout(this.dispatchEvent.bind(this, new CustomEvent('toggle', {bubbles:true, composed:true}), this));
+    setTimeout(() => {
+      this.dispatchEvent(new CustomEvent('toggle', {bubbles:true, composed:true, detail:this}));
+    });
   }
 }
 
