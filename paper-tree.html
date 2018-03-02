@@ -14,11 +14,19 @@ Example:
 <link rel="import" href="paper-tree-node.html">
 
 <dom-module id="paper-tree">
-
     <template>
-        <div>
+        <style>
+          #cursor {
+            position:absolute;
+            opacity:0.5;
+            display:none;
+          }
+        </style>
+
+        <div on-mouseup="endMoveNode" on-mousemove="moveNode">
             <paper-tree-node id="root" data="[[data]]" actions="[[actions]]"></paper-tree-node>
         </div>
+        <paper-tree-node id="cursor"></paper-tree-node>
     </template>
 
 </dom-module>
@@ -60,6 +68,16 @@ class PaperTree extends Polymer.Element {
       },
 
       /**
+       * You must know what `editable` means.
+       */
+      editable: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: "_editableChanged"
+      },
+
+      /**
        * `actions` available for all nodes. Each action object has the following fields:
        *
        * - `action.label`: string representing the display name of the menu item.
@@ -83,7 +101,31 @@ class PaperTree extends Polymer.Element {
   ready() {
     super.ready();
     this.root = this.shadowRoot.querySelector('#root');
+    this.cursor = this.shadowRoot.querySelector('#cursor');
+    this.moving = false;
     this.addEventListener('select', this._selectNode);
+    this.addEventListener('startMove', this._startMoveNode);
+  }
+
+  _startMoveNode(e) {
+    this.moving = true;
+    this.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
+    this.cursor.data = e.detail.data;
+    this.cursor.style.left = `${e.pageX + 10}px`;
+    this.cursor.style.top = `${e.pageY}px`;
+    this.cursor.style.display = 'block';
+  }
+
+  moveNode(e) {
+    //if (!this.moving) return;
+    this.cursor.style.left = `${e.pageX + 10}px`;
+    this.cursor.style.top = `${e.pageY}px`;
+  }
+
+  endMoveNode() {
+    this.moving = false;
+    this.root.style.removeProperty('--paper-tree-selected-border-bottom-color');
+    this.cursor.style.display = 'none';
   }
 
   /**
@@ -92,6 +134,11 @@ class PaperTree extends Polymer.Element {
   _dataChanged()  {
     this.root.data = this.data;
     console.log('_dataChanged', this.data);
+  }
+
+  _editableChanged(e) {
+    this.root.editable = this.editable;
+    console.log('_editableChanged', this.editable);
   }
 
   /**
