@@ -104,9 +104,26 @@ class PaperTree extends Polymer.Element {
     this.cursor = this.shadowRoot.querySelector('#cursor');
     this.moving = null;
     this.movingParent = null;
+
     this.addEventListener('select', this._selectNode);
     this.addEventListener('startMove', this._startMoveNode);
     this.addEventListener('endMove', this._selectDropNode);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('keyup', this._handleKeyup.bind(this));
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('keyup', this._handleKeyup.bind(this));
+  }
+
+  _handleKeyup(e) {
+    if (e.keyCode === 27) { // ESC
+      this.endMoveNode();
+    }
   }
 
   _startMoveNode(e) {

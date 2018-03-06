@@ -119,10 +119,10 @@ paper-tree-icon-theme                     | Change theme for node icon          
         </style>
 
         <div class="node-container">
-            <div class="node-row">
+            <div class="node-row" on-mouseup="endMoveNode">
                 <span class$="{{_computeClass(data.*)}}" on-click="toggleChildren"></span>
-                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select" on-mousedown="startMoveNode" on-mouseup="endMoveNode"></iron-icon>
-                <span class="node-name" on-click="select" on-mousedown="startMoveNode" on-mouseup="endMoveNode">{{data.name}}</span>
+                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select" on-mousedown="startMoveNode"></iron-icon>
+                <span class="node-name" on-click="select" on-mousedown="startMoveNode">{{data.name}}</span>
                 <template is="dom-if" if="{{actions}}">
                     <paper-menu-button id="actions">
                         <paper-icon-button icon="more-vert" noink slot="dropdown-trigger"></paper-icon-button>
