@@ -24,7 +24,7 @@ Example:
         </style>
 
         <div on-mouseup="endMoveNode" on-mousemove="moveNode">
-            <paper-tree-node id="root" data="[[data]]" actions="[[actions]]"></paper-tree-node>
+            <paper-tree-node id="root" data="[[data]]" actions="[[actions]]" editable="[[editable]]"></paper-tree-node>
         </div>
         <paper-tree-node id="cursor"></paper-tree-node>
     </template>
@@ -129,12 +129,12 @@ class PaperTree extends Polymer.Element {
         this.movingParent.data.children.splice(this.movingParent.data.children.indexOf(this.moving.data), 1);
         let index = newParent.data.children.indexOf(sibling.data) + 1;
         newParent.data.children.splice(index, 0, this.moving.data);
+        this.data = JSON.parse(JSON.stringify(this.data)); // TODO: for the time being
+        /*
+        this.notifyPath('*')
+        this._dataChanged();
+        */
       }
-      this.data = JSON.parse(JSON.stringify(this.data)); // TODO: for the time being
-      /*
-      this.notifyPath('*')
-      this._dataChanged();
-      */
     }
   }
 

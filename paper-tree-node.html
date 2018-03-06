@@ -138,7 +138,7 @@ paper-tree-icon-theme                     | Change theme for node icon          
               <ul>
                   <template is="dom-repeat" items="{{data.children}}">
                       <li>
-                          <paper-tree-node data="{{item}}" actions="{{actions}}"></paper-tree-node>
+                          <paper-tree-node data="{{item}}" actions="{{actions}}" editable="{{editable}}"></paper-tree-node>
                       </li>
                   </template>
               </ul>
@@ -233,11 +233,11 @@ class PaperTreeNode extends Polymer.Element {
   }
 
   startMoveNode() {
-    this.dispatchEvent(new CustomEvent('startMove', {bubbles:true, composed:true, detail:this}));
+    if (this.editable) this.dispatchEvent(new CustomEvent('startMove', {bubbles:true, composed:true, detail:this}));
   }
 
   endMoveNode() {
-    this.dispatchEvent(new CustomEvent('endMove', {bubbles:true, composed:true, detail:this}));
+    if (this.editable) this.dispatchEvent(new CustomEvent('endMove', {bubbles:true, composed:true, detail:this}));
   }
 
   /**
