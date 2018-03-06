@@ -121,8 +121,8 @@ paper-tree-icon-theme                     | Change theme for node icon          
         <div class="node-container">
             <div class="node-row">
                 <span class$="{{_computeClass(data.*)}}" on-click="toggleChildren"></span>
-                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select" on-mousedown="startMoveNode"></iron-icon>
-                <span class="node-name" on-click="select" on-mousedown="startMoveNode">{{data.name}}</span>
+                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select" on-mousedown="startMoveNode" on-mouseup="endMoveNode"></iron-icon>
+                <span class="node-name" on-click="select" on-mousedown="startMoveNode" on-mouseup="endMoveNode">{{data.name}}</span>
                 <template is="dom-if" if="{{actions}}">
                     <paper-menu-button id="actions">
                         <paper-icon-button icon="more-vert" noink slot="dropdown-trigger"></paper-icon-button>
@@ -236,11 +236,22 @@ class PaperTreeNode extends Polymer.Element {
     this.dispatchEvent(new CustomEvent('startMove', {bubbles:true, composed:true, detail:this}));
   }
 
+  endMoveNode() {
+    this.dispatchEvent(new CustomEvent('endMove', {bubbles:true, composed:true, detail:this}));
+  }
+
   /**
    * Returns the parent tree node. Returns null if root.
    */
-  getParent () {
-    return this.domHost.tagName === 'PAPER-TREE-NODE' ? this.domHost : null;
+  getParent (path) {
+    path.shift(); // remove myself
+    while (0 < path.length) {
+      let node = path.shift();
+      if (node.nodeName === 'PAPER-TREE-NODE') {
+        return node;
+      }
+    }
+    return null;
   }
 
   /**

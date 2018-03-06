@@ -102,28 +102,50 @@ class PaperTree extends Polymer.Element {
     super.ready();
     this.root = this.shadowRoot.querySelector('#root');
     this.cursor = this.shadowRoot.querySelector('#cursor');
-    this.moving = false;
+    this.moving = null;
+    this.movingParent = null;
     this.addEventListener('select', this._selectNode);
     this.addEventListener('startMove', this._startMoveNode);
+    this.addEventListener('endMove', this._selectDropNode);
   }
 
   _startMoveNode(e) {
-    this.moving = true;
-    this.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
-    this.cursor.data = e.detail.data;
-    this.cursor.style.left = `${e.pageX + 10}px`;
-    this.cursor.style.top = `${e.pageY}px`;
-    this.cursor.style.display = 'block';
+    if (e.detail && e.detail.tagName === 'PAPER-TREE-NODE') {
+      this.moving = e.detail;
+      this.movingParent = this.moving.getParent(e.path);
+      this.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
+      this.cursor.data = e.detail.data;
+      this.cursor.style.left = `${e.pageX + 10}px`;
+      this.cursor.style.top = `${e.pageY}px`;
+      this.cursor.style.display = 'block';
+    }
+  }
+
+  _selectDropNode(e) {
+    if (e.detail && e.detail.tagName === 'PAPER-TREE-NODE' && this.moving && this.moving !== e.detail) {
+      let sibling = e.detail;
+      let newParent = sibling.getParent(e.path);
+      if (newParent) {
+        this.movingParent.data.children.splice(this.movingParent.data.children.indexOf(this.moving.data), 1);
+        let index = newParent.data.children.indexOf(sibling.data) + 1;
+        newParent.data.children.splice(index, 0, this.moving.data);
+      }
+      this.data = JSON.parse(JSON.stringify(this.data)); // TODO: for the time being
+      /*
+      this.notifyPath('*')
+      this._dataChanged();
+      */
+    }
   }
 
   moveNode(e) {
-    //if (!this.moving) return;
     this.cursor.style.left = `${e.pageX + 10}px`;
     this.cursor.style.top = `${e.pageY}px`;
   }
 
   endMoveNode() {
-    this.moving = false;
+    this.moving = null;
+    this.movingParent = null;
     this.root.style.removeProperty('--paper-tree-selected-border-bottom-color');
     this.cursor.style.display = 'none';
   }

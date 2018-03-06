@@ -257,37 +257,26 @@
             <paper-tree id="tree4" editable></paper-tree>
             <script>
 
-                var tree = document.querySelector('#tree4');
+                var tree4 = document.querySelector('#tree4');
 
                 // Setting some data.
-                tree.data = {
+                tree4.data = {
                     "name": "GOT",
                     "icon": "theaters",
                     "open": true,
                     "children": [
                         {
                             "name": "Starks",
+                            "open": true,
                             "icon": "turned-in",
                             "children": [{
-                                "icon": "account-circle",
-                                "name": "Eddard"
+                                "name": "Eddard",
+                                "icon": "account-circle"
                             }, {
                                 "name": "Catelyn",
                                 "icon": "account-circle"
                             }, {
                                 "name": "Sansa",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Robb",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Bran",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Arya",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Rickson",
                                 "icon": "account-circle"
                             }]
                         },
@@ -304,30 +293,7 @@
                             }, {
                                 "name": "Jaime",
                                 "icon": "account-circle"
-                            }, {
-                                "name": "Cersei",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Tommen",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Myrcella",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Joffrey",
-                                "icon": "account-circle"
                             }   ]
-                        },
-                        {
-                            "name": "Targaryens",
-                            "icon": "turned-in",
-                            "children": [{
-                                "name": "Daenerys",
-                                "icon": "account-circle"
-                            }, {
-                                "name": "Viserys",
-                                "icon": "account-circle"
-                            }]
                         },
                         {
                             "name": "Baratheons",
@@ -348,13 +314,13 @@
                 };
 
                 // Adding one action.
-                tree.actions = [{
+                tree4.actions = [{
                     label: 'show',
                     event: 'onshow'
                 }];
 
                 // Finally adding a listener for that action.
-                tree.addEventListener('onshow', function(event) {
+                tree4.addEventListener('onshow', function(event) {
                     alert('This is ' + event.detail.data.name);
                 });
 
