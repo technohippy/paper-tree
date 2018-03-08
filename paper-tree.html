@@ -1,4 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="paper-tree-node.html">
 
 <!--
@@ -14,11 +16,31 @@ Example:
 <link rel="import" href="paper-tree-node.html">
 
 <dom-module id="paper-tree">
-
     <template>
-        <div>
-            <paper-tree-node id="root" data="[[data]]" actions="[[actions]]"></paper-tree-node>
+        <style>
+          #cursor {
+            position:absolute;
+            opacity:0.5;
+            display:none;
+          }
+        </style>
+
+        <div on-mouseup="endMoveNode" on-mousemove="moveNode">
+            <paper-tree-node id="root" data="[[data]]" actions="[[computeActions(editable, actions)]]" editable="[[editable]]"></paper-tree-node>
         </div>
+        <paper-tree-node id="cursor"></paper-tree-node>
+
+        <paper-dialog id="editor" modal>
+            <h2>[[_computeEditorTitle(editing)]]</h2>
+            <p>
+              <paper-input id="editing-name" label="name" value="[[editing.name]]"></paper-input>
+              <paper-input id="editing-icon" label="icon" value="[[editing.icon]]"></paper-input>
+            </p>
+            <div class="buttons">
+              <paper-button dialog-dismiss>Decline</paper-button>
+              <paper-button dialog-confirm autofocus on-click="changeNode">Accept</paper-button>
+            </div>
+        </paper-dialog>
     </template>
 
 </dom-module>
@@ -60,6 +82,16 @@ class PaperTree extends Polymer.Element {
       },
 
       /**
+       * `editable` makes the tree editable.
+       */
+      editable: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        observer: "_editableChanged"
+      },
+
+      /**
        * `actions` available for all nodes. Each action object has the following fields:
        *
        * - `action.label`: string representing the display name of the menu item.
@@ -78,28 +110,171 @@ class PaperTree extends Polymer.Element {
 
   constructor() {
     super();
+    this.editActions = [
+      {label:'edit', event:'editNode'},
+      {label:'delete', event:'deleteNode'},
+      {label:'add child', event:'addChildNode'}
+    ];
   }
 
   ready() {
     super.ready();
-    this.root = this.shadowRoot.querySelector('#root');
+    this.moving = null;
+    this.movingParent = null;
+
     this.addEventListener('select', this._selectNode);
+    this.addEventListener('startMove', this._startMoveNode);
+    this.addEventListener('endMove', this._selectDropNode);
+    this.addEventListener('editNode', this._editNode);
+    this.addEventListener('deleteNode', this._deleteNode);
+    this.addEventListener('addChildNode', this._addChildNode);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    window.addEventListener('keyup', this._handleKeyup.bind(this));
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    window.removeEventListener('keyup', this._handleKeyup.bind(this));
+  }
+
+  _handleKeyup(e) {
+    if (e.keyCode === 27) { // ESC
+      this.endMoveNode();
+    }
+  }
+
+  _startMoveNode(e) {
+    if (e.detail && e.detail.tagName === 'PAPER-TREE-NODE') {
+      this.moving = e.detail;
+      this.movingParent = this.moving.getParent(e.path);
+      this.$.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
+      this.$.cursor.data = e.detail.data;
+      this.$.cursor.style.left = `${e.pageX + 10}px`;
+      this.$.cursor.style.top = `${e.pageY}px`;
+      this.$.cursor.style.display = 'block';
+    }
+  }
+
+  _selectDropNode(e) {
+    if (e.detail && e.detail.tagName === 'PAPER-TREE-NODE' && this.moving && this.moving !== e.detail) {
+      let sibling = e.detail;
+      let newParent = sibling.getParent(e.path);
+      if (newParent) {
+        this.movingParent.data.children.splice(this.movingParent.data.children.indexOf(this.moving.data), 1);
+        let index = newParent.data.children.indexOf(sibling.data);
+        newParent.data.children.splice(index, 0, this.moving.data);
+        this._update();
+      }
+    }
+  }
+
+  _update() {
+    this.data = JSON.parse(JSON.stringify(this.data)); // TODO: for the time being
+    /*
+    this.notifyPath('*')
+    this._dataChanged();
+    */
+  }
+
+  moveNode(e) {
+    this.$.cursor.style.left = `${e.pageX + 10}px`;
+    this.$.cursor.style.top = `${e.pageY}px`;
+  }
+
+  endMoveNode() {
+    this.moving = null;
+    this.movingParent = null;
+    this.$.root.style.removeProperty('--paper-tree-selected-border-bottom-color');
+    this.$.cursor.style.display = 'none';
+  }
+
+  _editNode(e) {
+    console.log('_editNode');
+    this.editing = e.detail.data;
+    this.$.editor.open();
+  }
+
+  _deleteNode(e) {
+    console.log('_deleteNode');
+    let node = e.detail;
+    let parentNode = node.getParent(e.path);
+    let index = parentNode.data.children.indexOf(node.data);
+    parentNode.data.children.splice(index, 1);
+    this._update();  
+  }
+
+  _addChildNode(e) {
+    console.log('_addChildNode');
+    this.editing = {
+      new: true,
+      parent: e.detail
+    };
+    this.$.editor.open();
+  }
+
+  _computeEditorTitle(data) {
+    if (data.new) {
+      return "Add New Child";
+    }
+    else {
+      return "Edit";
+    }
+  }
+
+  changeNode(e) {
+    if (this.editing.new) {
+      console.log(this.$);
+      this.editing.name = this.$['editing-name'].value;
+      this.editing.icon = this.$['editing-icon'].value;
+      let parent = this.editing.parent;
+      delete this.editing.parent;
+      if (!parent.data.children) parent.data.children = [];
+      parent.data.children.push(this.editing);
+      parent.data.open = true;
+    }
+    else {
+      this.editing.name = this.$['editing-name'].value;
+      this.editing.icon = this.$['editing-icon'].value;
+    }
+    this._update();
   }
 
   /**
    * Called whenever the data is changed to notify the lower nodes.
    */
   _dataChanged()  {
-    this.root.data = this.data;
+    this.$.root.data = this.data;
     console.log('_dataChanged', this.data);
+  }
+
+  /**
+   * Called whenever the editable is changed to notify the lower nodes.
+   */
+  _editableChanged(e) {
+    this.$.root.editable = this.editable;
+    console.log('_editableChanged', this.editable);
   }
 
   /**
    * Called whenever the actions list is changed to notify the lower nodes.
    */
   _actionsChanged()  {
-    this.root.actions = this.actions;
-    console.log('_actionsChanged', this.actions);
+    this.$.root.actions = this.computeActions(this.editable, this.actions);
+    console.log('_actionsChanged', this.computeActions(this.editable, this.actions));
+  }
+
+  computeActions(editable, actions) {
+    let ret = [];
+    if (editable && this.editActions) {
+      ret.push(...this.editActions)
+    }
+    if (actions) {
+      ret.push(...actions);
+    }
+    return ret;
   }
 
   /**
