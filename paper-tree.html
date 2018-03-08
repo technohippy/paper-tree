@@ -1,4 +1,6 @@
 <link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-input/paper-input.html">
 <link rel="import" href="paper-tree-node.html">
 
 <!--
@@ -27,6 +29,18 @@ Example:
             <paper-tree-node id="root" data="[[data]]" actions="[[computeActions(editable, actions)]]" editable="[[editable]]"></paper-tree-node>
         </div>
         <paper-tree-node id="cursor"></paper-tree-node>
+
+        <paper-dialog id="editor" modal>
+            <h2>[[_computeEditorTitle(editing)]]</h2>
+            <p>
+              <paper-input id="editing-name" label="name" value="[[editing.name]]"></paper-input>
+              <paper-input id="editing-icon" label="icon" value="[[editing.icon]]"></paper-input>
+            </p>
+            <div class="buttons">
+              <paper-button dialog-dismiss>Decline</paper-button>
+              <paper-button dialog-confirm autofocus on-click="changeNode">Accept</paper-button>
+            </div>
+        </paper-dialog>
     </template>
 
 </dom-module>
@@ -105,8 +119,6 @@ class PaperTree extends Polymer.Element {
 
   ready() {
     super.ready();
-    this.root = this.shadowRoot.querySelector('#root');
-    this.cursor = this.shadowRoot.querySelector('#cursor');
     this.moving = null;
     this.movingParent = null;
 
@@ -138,11 +150,11 @@ class PaperTree extends Polymer.Element {
     if (e.detail && e.detail.tagName === 'PAPER-TREE-NODE') {
       this.moving = e.detail;
       this.movingParent = this.moving.getParent(e.path);
-      this.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
-      this.cursor.data = e.detail.data;
-      this.cursor.style.left = `${e.pageX + 10}px`;
-      this.cursor.style.top = `${e.pageY}px`;
-      this.cursor.style.display = 'block';
+      this.$.root.style.setProperty('--paper-tree-selected-border-bottom-color', 'rgba(200, 200, 200, 0.5)');
+      this.$.cursor.data = e.detail.data;
+      this.$.cursor.style.left = `${e.pageX + 10}px`;
+      this.$.cursor.style.top = `${e.pageY}px`;
+      this.$.cursor.style.display = 'block';
     }
   }
 
@@ -168,20 +180,21 @@ class PaperTree extends Polymer.Element {
   }
 
   moveNode(e) {
-    this.cursor.style.left = `${e.pageX + 10}px`;
-    this.cursor.style.top = `${e.pageY}px`;
+    this.$.cursor.style.left = `${e.pageX + 10}px`;
+    this.$.cursor.style.top = `${e.pageY}px`;
   }
 
   endMoveNode() {
     this.moving = null;
     this.movingParent = null;
-    this.root.style.removeProperty('--paper-tree-selected-border-bottom-color');
-    this.cursor.style.display = 'none';
+    this.$.root.style.removeProperty('--paper-tree-selected-border-bottom-color');
+    this.$.cursor.style.display = 'none';
   }
 
   _editNode(e) {
     console.log('_editNode');
-    console.log(e.detail);
+    this.editing = e.detail.data;
+    this.$.editor.open();
   }
 
   _deleteNode(e) {
@@ -195,19 +208,41 @@ class PaperTree extends Polymer.Element {
 
   _addChildNode(e) {
     console.log('_addChildNode');
-    console.log(e.detail);
+    this.editing = {
+      new: true,
+      parent: e.detail
+    };
+    this.$.editor.open();
+  }
+
+  changeNode(e) {
+    if (this.editing.new) {
+      console.log(this.$);
+      this.editing.name = this.$['editing-name'].value;
+      this.editing.icon = this.$['editing-icon'].value;
+      let parent = this.editing.parent;
+      delete this.editing.parent;
+      if (!parent.data.children) parent.data.children = [];
+      parent.data.children.push(this.editing);
+      parent.data.open = true;
+    }
+    else {
+      this.editing.name = this.$['editing-name'].value;
+      this.editing.icon = this.$['editing-icon'].value;
+    }
+    this._update();
   }
 
   /**
    * Called whenever the data is changed to notify the lower nodes.
    */
   _dataChanged()  {
-    this.root.data = this.data;
+    this.$.root.data = this.data;
     console.log('_dataChanged', this.data);
   }
 
   _editableChanged(e) {
-    this.root.editable = this.editable;
+    this.$.root.editable = this.editable;
     console.log('_editableChanged', this.editable);
   }
 
@@ -215,8 +250,17 @@ class PaperTree extends Polymer.Element {
    * Called whenever the actions list is changed to notify the lower nodes.
    */
   _actionsChanged()  {
-    this.root.actions = this.computeActions(this.editable, this.actions);
+    this.$.root.actions = this.computeActions(this.editable, this.actions);
     console.log('_actionsChanged', this.computeActions(this.editable, this.actions));
+  }
+
+  _computeEditorTitle(data) {
+    if (data.new) {
+      return "Create";
+    }
+    else {
+      return "Edit";
+    }
   }
 
   computeActions(editable, actions) {
