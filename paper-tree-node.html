@@ -6,6 +6,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 
 <!--
 <paper-tree-node> display a tree node with expandable/collapsible capabilities and actions menu.
@@ -29,8 +30,6 @@ paper-tree-icon-theme                     | Change theme for node icon          
 @demo
 -->
 
-<link rel="import" href="../iron-icons/iron-icons.html">
-
 <dom-module id="paper-tree-node">
 
     <template>
@@ -46,8 +45,17 @@ paper-tree-icon-theme                     | Change theme for node icon          
                 display: inline-block;
             }
 
+            .node-row {
+                border-top: 1px solid transparent;
+            }
+
+            .node-row:hover {
+                border-top: 1px solid var(--paper-tree-selected-border-bottom-color, transparent);
+            }
+
             .node-container {
                 white-space: nowrap;
+                user-select: none;
             }
 
             .node-row {
@@ -110,10 +118,10 @@ paper-tree-icon-theme                     | Change theme for node icon          
         </style>
 
         <div class="node-container">
-            <div class="node-row">
+            <div class="node-row" on-mouseup="endMoveNode">
                 <span class$="{{_computeClass(data.*)}}" on-click="toggleChildren"></span>
-                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select"></iron-icon>
-                <span class="node-name" on-click="select">{{data.name}}</span>
+                <iron-icon class="node-icon" icon$="{{_computeIcon(data.icon)}}" on-click="select" on-mousedown="startMoveNode" on-mouseup="endMoveNode"></iron-icon>
+                <span class="node-name" on-click="select" on-mousedown="startMoveNode">{{data.name}}</span>
                 <template is="dom-if" if="{{actions}}">
                     <paper-menu-button id="actions">
                         <paper-icon-button icon="more-vert" noink slot="dropdown-trigger"></paper-icon-button>
@@ -129,7 +137,7 @@ paper-tree-icon-theme                     | Change theme for node icon          
               <ul>
                   <template is="dom-repeat" items="{{data.children}}">
                       <li>
-                          <paper-tree-node data="{{item}}" actions="{{actions}}"></paper-tree-node>
+                          <paper-tree-node data="{{item}}" actions="{{actions}}" editable="{{editable}}"></paper-tree-node>
                       </li>
                   </template>
               </ul>
@@ -163,6 +171,14 @@ class PaperTreeNode extends Polymer.Element {
         value() {
           return null;
         }
+      },
+
+      /**
+       * `editable` makes the tree editable.
+       */
+      editable: {
+        type: Boolean,
+        value: false
       },
 
       /**
@@ -219,10 +235,31 @@ class PaperTreeNode extends Polymer.Element {
   }
 
   /**
+   * Start dragging a node when the tree is editable
+   */
+  startMoveNode() {
+    if (this.editable) this.dispatchEvent(new CustomEvent('startMove', {bubbles:true, composed:true, detail:this}));
+  }
+
+  /**
+   * Drop a dragging node
+   */
+  endMoveNode() {
+    if (this.editable) this.dispatchEvent(new CustomEvent('endMove', {bubbles:true, composed:true, detail:this}));
+  }
+
+  /**
    * Returns the parent tree node. Returns null if root.
    */
-  getParent () {
-    return this.domHost.tagName === 'PAPER-TREE-NODE' ? this.domHost : null;
+  getParent (path) {
+    path.shift(); // remove myself
+    while (0 < path.length) {
+      let node = path.shift();
+      if (node.nodeName === 'PAPER-TREE-NODE') {
+        return node;
+      }
+    }
+    return null;
   }
 
   /**

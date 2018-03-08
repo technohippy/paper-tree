@@ -58,7 +58,6 @@
         </template>
     </demo-snippet>
 
-
     <h3>Complex tree demo</h3>
     <demo-snippet>
         <template>
@@ -249,6 +248,83 @@
                     </script>
                 </template>
             </dom-bind>
+        </template>
+    </demo-snippet>
+
+    <h3>Editable tree demo</h3>
+    <demo-snippet>
+        <template>
+            <paper-tree id="tree4" editable></paper-tree>
+            <script>
+
+                var tree4 = document.querySelector('#tree4');
+
+                // Setting some data.
+                tree4.data = {
+                    "name": "GOT",
+                    "icon": "theaters",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "Starks",
+                            "open": true,
+                            "icon": "turned-in",
+                            "children": [{
+                                "name": "Eddard",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Catelyn",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Sansa",
+                                "icon": "account-circle"
+                            }]
+                        },
+                        {
+                            "name": "Lannisters",
+                            "open": true,
+                            "icon": "turned-in",
+                            "children": [{
+                                "name": "Tywin",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Tyrion",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Jaime",
+                                "icon": "account-circle"
+                            }   ]
+                        },
+                        {
+                            "name": "Baratheons",
+                            "icon": "turned-in",
+                            "open": true,
+                            "children": [{
+                                "name": "Robert",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Stannis",
+                                "icon": "account-circle"
+                            }, {
+                                "name": "Renly",
+                                "icon": "account-circle"
+                            }]
+                        }
+                    ]
+                };
+
+                // Adding one action.
+                tree4.actions = [{
+                    label: 'show',
+                    event: 'onshow'
+                }];
+
+                // Finally adding a listener for that action.
+                tree4.addEventListener('onshow', function(event) {
+                    alert('This is ' + event.detail.data.name);
+                });
+
+            </script>
         </template>
     </demo-snippet>
 
