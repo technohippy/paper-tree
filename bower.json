@@ -1,7 +1,7 @@
 {
   "name": "paper-tree",
   "main": "paper-tree.html",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "A custom element displaying a browsable tree.",
   "keywords": [
     "tree",
@@ -11,8 +11,9 @@
     "web-components",
     "polymer"
   ],
-  "homepage": "https://github.com/vpusher/paper-tree",
+  "homepage": "https://github.com/technohippy/paper-tree",
   "authors": [
+    "Yasushi Ando <andyjpn@gmail.com>",
     "Florian Maffini <florian.maffini@free.fr>"
   ],
   "dependencies": {
