@@ -6,6 +6,7 @@
 <link rel="import" href="../paper-item/paper-item.html">
 <link rel="import" href="../paper-listbox/paper-listbox.html">
 <link rel="import" href="../neon-animation/web-animations.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
 
 <!--
 <paper-tree-node> display a tree node with expandable/collapsible capabilities and actions menu.
@@ -28,8 +29,6 @@ paper-tree-icon-theme                     | Change theme for node icon          
 
 @demo
 -->
-
-<link rel="import" href="../iron-icons/iron-icons.html">
 
 <dom-module id="paper-tree-node">
 
@@ -174,6 +173,9 @@ class PaperTreeNode extends Polymer.Element {
         }
       },
 
+      /**
+       * `editable` makes the tree editable.
+       */
       editable: {
         type: Boolean,
         value: false
@@ -232,10 +234,16 @@ class PaperTreeNode extends Polymer.Element {
     this.dispatchEvent(new CustomEvent('select', {bubbles:true, composed:true, detail:this}));
   }
 
+  /**
+   * Start dragging a node when the tree is editable
+   */
   startMoveNode() {
     if (this.editable) this.dispatchEvent(new CustomEvent('startMove', {bubbles:true, composed:true, detail:this}));
   }
 
+  /**
+   * Drop a dragging node
+   */
   endMoveNode() {
     if (this.editable) this.dispatchEvent(new CustomEvent('endMove', {bubbles:true, composed:true, detail:this}));
   }

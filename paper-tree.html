@@ -82,7 +82,7 @@ class PaperTree extends Polymer.Element {
       },
 
       /**
-       * You must know what `editable` means.
+       * `editable` makes the tree editable.
        */
       editable: {
         type: Boolean,
@@ -215,6 +215,15 @@ class PaperTree extends Polymer.Element {
     this.$.editor.open();
   }
 
+  _computeEditorTitle(data) {
+    if (data.new) {
+      return "Add New Child";
+    }
+    else {
+      return "Edit";
+    }
+  }
+
   changeNode(e) {
     if (this.editing.new) {
       console.log(this.$);
@@ -241,6 +250,9 @@ class PaperTree extends Polymer.Element {
     console.log('_dataChanged', this.data);
   }
 
+  /**
+   * Called whenever the editable is changed to notify the lower nodes.
+   */
   _editableChanged(e) {
     this.$.root.editable = this.editable;
     console.log('_editableChanged', this.editable);
@@ -252,15 +264,6 @@ class PaperTree extends Polymer.Element {
   _actionsChanged()  {
     this.$.root.actions = this.computeActions(this.editable, this.actions);
     console.log('_actionsChanged', this.computeActions(this.editable, this.actions));
-  }
-
-  _computeEditorTitle(data) {
-    if (data.new) {
-      return "Add New Child";
-    }
-    else {
-      return "Edit";
-    }
   }
 
   computeActions(editable, actions) {
