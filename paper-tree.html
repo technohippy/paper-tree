@@ -164,7 +164,7 @@ class PaperTree extends Polymer.Element {
       let newParent = sibling.getParent(e.path);
       if (newParent) {
         this.movingParent.data.children.splice(this.movingParent.data.children.indexOf(this.moving.data), 1);
-        let index = newParent.data.children.indexOf(sibling.data) + 1;
+        let index = newParent.data.children.indexOf(sibling.data);
         newParent.data.children.splice(index, 0, this.moving.data);
         this._update();
       }
@@ -256,7 +256,7 @@ class PaperTree extends Polymer.Element {
 
   _computeEditorTitle(data) {
     if (data.new) {
-      return "Create";
+      return "Add New Child";
     }
     else {
       return "Edit";
